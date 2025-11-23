@@ -113,8 +113,12 @@
         <div class="lg:col-span-6 google-card flex flex-col h-[800px]">
             <div class="p-6 border-b border-gray-700 bg-[#3c4043] rounded-t-lg">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-medium">Library Pool A</h2>
-                    <span class="px-2 py-1 rounded bg-[#8ab4f8] text-[#202124] text-xs font-bold">POOL A</span>
+                    <h2 class="text-lg font-medium">Library Pool <span id="labelPoolA">A</span></h2>
+                    <!-- Editable Pool Name Input -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-xs text-[#9aa0a6]">ID:</label>
+                        <input type="text" id="poolNameA" value="A" class="google-input px-2 py-1 w-12 text-center text-sm font-bold uppercase bg-[#8ab4f8] text-[#202124] border-none focus:ring-2 focus:ring-white">
+                    </div>
                 </div>
                 <p class="text-xs text-[#9aa0a6] mb-4">Enter the folder suffixes from the sequencer for this pool.</p>
                 
@@ -139,7 +143,7 @@
 
                 <div class="p-4 border-t border-gray-700 bg-[#303134] rounded-b-lg">
                     <button onclick="addRow('A')" class="w-full py-2 border border-[#5f6368] rounded text-[#8ab4f8] text-sm hover:bg-[#3c4043] transition-colors">
-                        + Add Sample to Pool A
+                        + Add Sample to Pool <span id="btnLabelPoolA">A</span>
                     </button>
                 </div>
             </div>
@@ -149,8 +153,12 @@
         <div class="lg:col-span-6 google-card flex flex-col h-[800px]">
             <div class="p-6 border-b border-gray-700 bg-[#3c4043] rounded-t-lg">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-medium">Library Pool B</h2>
-                    <span class="px-2 py-1 rounded bg-[#e8eaed] text-[#202124] text-xs font-bold">POOL B</span>
+                    <h2 class="text-lg font-medium">Library Pool <span id="labelPoolB">B</span></h2>
+                    <!-- Editable Pool Name Input -->
+                    <div class="flex items-center space-x-2">
+                         <label class="text-xs text-[#9aa0a6]">ID:</label>
+                        <input type="text" id="poolNameB" value="B" class="google-input px-2 py-1 w-12 text-center text-sm font-bold uppercase bg-[#e8eaed] text-[#202124] border-none focus:ring-2 focus:ring-[#8ab4f8]">
+                    </div>
                 </div>
                 <p class="text-xs text-[#9aa0a6] mb-4">Enter the folder suffixes from the sequencer for this pool.</p>
                 
@@ -175,7 +183,7 @@
 
                 <div class="p-4 border-t border-gray-700 bg-[#303134] rounded-b-lg">
                     <button onclick="addRow('B')" class="w-full py-2 border border-[#5f6368] rounded text-[#8ab4f8] text-sm hover:bg-[#3c4043] transition-colors">
-                        + Add Sample to Pool B
+                        + Add Sample to Pool <span id="btnLabelPoolB">B</span>
                     </button>
                 </div>
             </div>
@@ -192,7 +200,7 @@
         for(let i=0; i<5; i++) addRow('B');
 
         // Live Preview Listeners
-        const inputs = ['seqId', 'initials', 'foldersA', 'foldersB'];
+        const inputs = ['seqId', 'initials', 'foldersA', 'foldersB', 'poolNameA', 'poolNameB'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', updatePreviews);
         });
@@ -201,6 +209,16 @@
             const seqId = document.getElementById('seqId').value || '14XXX';
             const initials = document.getElementById('initials').value || 'CZ';
             
+            // Update Pool Labels based on new Inputs
+            const nameA = document.getElementById('poolNameA').value || 'A';
+            const nameB = document.getElementById('poolNameB').value || 'B';
+            
+            document.getElementById('labelPoolA').textContent = nameA;
+            document.getElementById('btnLabelPoolA').textContent = nameA;
+            document.getElementById('labelPoolB').textContent = nameB;
+            document.getElementById('btnLabelPoolB').textContent = nameB;
+
+            // Update Folder Previews
             const foldersA = document.getElementById('foldersA').value.split(',').map(s => s.trim()).filter(s => s);
             const foldersB = document.getElementById('foldersB').value.split(',').map(s => s.trim()).filter(s => s);
 
@@ -246,15 +264,18 @@
             // Header row
             csvContent += "Experiment_ID,Pool,Source_Folders,Patient_ID,Barcode_Number,Date\n";
 
-            const processPool = (poolName) => {
-                const suffixInput = document.getElementById(`folders${poolName}`).value;
+            // internalId is 'A' or 'B' (used for DOM selection), 
+            // displayInputId is 'poolNameA' or 'poolNameB' (used for the actual CSV value)
+            const processPool = (internalId) => {
+                const displayName = document.getElementById(`poolName${internalId}`).value.trim() || internalId;
+                const suffixInput = document.getElementById(`folders${internalId}`).value;
                 const suffixes = suffixInput.split(',').map(s => s.trim()).filter(s => s);
                 
                 // Create the full folder string (e.g., "14734-CZ-1;14734-CZ-2")
                 const fullFolders = suffixes.map(n => `${seqId}-${initials}-${n}`).join(';');
                 
                 // Get all rows
-                const rows = document.querySelectorAll(`#list${poolName} .grid`);
+                const rows = document.querySelectorAll(`#list${internalId} .grid`);
                 
                 rows.forEach(row => {
                     const patient = row.querySelector('.patient-input').value.trim();
@@ -262,7 +283,7 @@
 
                     if (patient && barcode) {
                         // Format: EXP, POOL, FOLDERS, PATIENT, BARCODE, DATE
-                        let rowString = `${seqId},${poolName},"${fullFolders}",${patient},${barcode},${date}`;
+                        let rowString = `${seqId},${displayName},"${fullFolders}",${patient},${barcode},${date}`;
                         csvContent += rowString + "\n";
                     }
                 });
