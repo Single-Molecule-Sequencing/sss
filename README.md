@@ -1,2 +1,3 @@
-# ss-gen
-Sequencing sample sheet generator for wet lab
+# Sequencing Sample Sheet
+
+The Sequencing Sample Sheet generator for wet lab
