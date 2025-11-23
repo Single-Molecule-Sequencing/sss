@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Henry Li">
+    <title>Sequencing Sample Sheet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #202124; /* Google Dark Background */
+            color: #e8eaed; /* Google Light Text */
+        }
+
+        .google-input {
+            background-color: #202124;
+            border: 1px solid #5f6368;
+            color: #e8eaed;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .google-input:focus {
+            border-color: #8ab4f8;
+            outline: none;
+            box-shadow: 0 0 0 1px #8ab4f8;
+        }
+        
+        /* Card styling */
+        .google-card {
+            background-color: #303134;
+            border-radius: 8px;
+            border: 1px solid #3c4043;
+        }
+
+        /* Button Styling */
+        .btn-primary {
+            background-color: #8ab4f8;
+            color: #202124;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #aecbfa;
+        }
+        
+        .btn-icon {
+            color: #9aa0a6;
+            transition: color 0.2s;
+        }
+        .btn-icon:hover {
+            color: #e8eaed;
+        }
+        .btn-delete:hover {
+            color: #f28b82;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #202124; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5f6368; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9aa0a6; 
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 flex flex-col items-center">
+
+    <!-- Header -->
+    <div class="w-full max-w-7xl mb-8 flex justify-between items-center border-b border-gray-700 pb-4">
+        <div>
+            <h1 class="text-2xl font-medium text-[#e8eaed]">Sample Sheet Generator</h1>
+            <p class="text-[#9aa0a6] text-sm mt-1">Wet Lab &rarr; Dry Lab Handoff Tool</p>
+        </div>
+        <button onclick="generateCSV()" class="btn-primary px-6 py-2 text-sm shadow-md">
+            Download CSV
+        </button>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Section 1: Global Metadata (Full Width) -->
+        <div class="lg:col-span-12 google-card p-6">
+            <h2 class="text-[#8ab4f8] text-sm font-medium uppercase tracking-wider mb-4">Global Experiment Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="flex flex-col">
+                    <label class="text-xs text-[#9aa0a6] mb-1">Sequence ID (e.g., 14734)</label>
+                    <input type="text" id="seqId" class="google-input px-3 py-2" placeholder="14XXX">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-xs text-[#9aa0a6] mb-1">Submitter Initials (e.g., CZ)</label>
+                    <input type="text" id="initials" class="google-input px-3 py-2" placeholder="CZ">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-xs text-[#9aa0a6] mb-1">Date</label>
+                    <input type="date" id="expDate" class="google-input px-3 py-2 text-[#9aa0a6]">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Library A (Half Width) -->
+        <div class="lg:col-span-6 google-card flex flex-col h-[800px]">
+            <div class="p-6 border-b border-gray-700 bg-[#3c4043] rounded-t-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-medium">Library Pool A</h2>
+                    <span class="px-2 py-1 rounded bg-[#8ab4f8] text-[#202124] text-xs font-bold">POOL A</span>
+                </div>
+                <p class="text-xs text-[#9aa0a6] mb-4">Enter the folder suffixes from the sequencer for this pool.</p>
+                
+                <div class="flex flex-col">
+                    <label class="text-xs text-[#9aa0a6] mb-1">Run Folder Suffixes (Separated by comma)</label>
+                    <input type="text" id="foldersA" class="google-input px-3 py-2" placeholder="e.g., 1, 2">
+                    <p class="text-[10px] text-[#9aa0a6] mt-1">Generates: <span id="previewA" class="font-mono text-[#8ab4f8]">14XXX-CZ-1, 14XXX-CZ-2</span></p>
+                </div>
+            </div>
+
+            <!-- Sample Table A -->
+            <div class="flex-1 overflow-hidden flex flex-col">
+                <div class="grid grid-cols-12 gap-2 px-6 py-2 border-b border-gray-700 text-xs text-[#9aa0a6] font-medium bg-[#303134]">
+                    <div class="col-span-6">PATIENT ID</div>
+                    <div class="col-span-5">BARCODE #</div>
+                    <div class="col-span-1 text-center"></div>
+                </div>
+                
+                <div id="listA" class="overflow-y-auto p-4 space-y-2 flex-1">
+                    <!-- Rows added here -->
+                </div>
+
+                <div class="p-4 border-t border-gray-700 bg-[#303134] rounded-b-lg">
+                    <button onclick="addRow('A')" class="w-full py-2 border border-[#5f6368] rounded text-[#8ab4f8] text-sm hover:bg-[#3c4043] transition-colors">
+                        + Add Sample to Pool A
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Library B (Half Width) -->
+        <div class="lg:col-span-6 google-card flex flex-col h-[800px]">
+            <div class="p-6 border-b border-gray-700 bg-[#3c4043] rounded-t-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-medium">Library Pool B</h2>
+                    <span class="px-2 py-1 rounded bg-[#e8eaed] text-[#202124] text-xs font-bold">POOL B</span>
+                </div>
+                <p class="text-xs text-[#9aa0a6] mb-4">Enter the folder suffixes from the sequencer for this pool.</p>
+                
+                <div class="flex flex-col">
+                    <label class="text-xs text-[#9aa0a6] mb-1">Run Folder Suffixes (Separated by comma)</label>
+                    <input type="text" id="foldersB" class="google-input px-3 py-2" placeholder="e.g., 3, 4">
+                    <p class="text-[10px] text-[#9aa0a6] mt-1">Generates: <span id="previewB" class="font-mono text-[#8ab4f8]">14XXX-CZ-3, 14XXX-CZ-4</span></p>
+                </div>
+            </div>
+
+            <!-- Sample Table B -->
+            <div class="flex-1 overflow-hidden flex flex-col">
+                <div class="grid grid-cols-12 gap-2 px-6 py-2 border-b border-gray-700 text-xs text-[#9aa0a6] font-medium bg-[#303134]">
+                    <div class="col-span-6">PATIENT ID</div>
+                    <div class="col-span-5">BARCODE #</div>
+                    <div class="col-span-1 text-center"></div>
+                </div>
+                
+                <div id="listB" class="overflow-y-auto p-4 space-y-2 flex-1">
+                    <!-- Rows added here -->
+                </div>
+
+                <div class="p-4 border-t border-gray-700 bg-[#303134] rounded-b-lg">
+                    <button onclick="addRow('B')" class="w-full py-2 border border-[#5f6368] rounded text-[#8ab4f8] text-sm hover:bg-[#3c4043] transition-colors">
+                        + Add Sample to Pool B
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Initialization ---
+        document.getElementById('expDate').valueAsDate = new Date();
+        
+        // Initial rows
+        for(let i=0; i<5; i++) addRow('A');
+        for(let i=0; i<5; i++) addRow('B');
+
+        // Live Preview Listeners
+        const inputs = ['seqId', 'initials', 'foldersA', 'foldersB'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreviews);
+        });
+
+        function updatePreviews() {
+            const seqId = document.getElementById('seqId').value || '14XXX';
+            const initials = document.getElementById('initials').value || 'CZ';
+            
+            const foldersA = document.getElementById('foldersA').value.split(',').map(s => s.trim()).filter(s => s);
+            const foldersB = document.getElementById('foldersB').value.split(',').map(s => s.trim()).filter(s => s);
+
+            const format = (nums) => nums.length ? nums.map(n => `${seqId}-${initials}-${n}`).join(', ') : `Waiting for suffixes...`;
+
+            document.getElementById('previewA').textContent = format(foldersA);
+            document.getElementById('previewB').textContent = format(foldersB);
+        }
+
+        function addRow(pool) {
+            const container = document.getElementById(`list${pool}`);
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-12 gap-2 items-center group';
+            div.innerHTML = `
+                <div class="col-span-6">
+                    <input type="text" class="google-input w-full px-3 py-2 text-sm patient-input" placeholder="Patient ID">
+                </div>
+                <div class="col-span-5">
+                    <input type="number" class="google-input w-full px-3 py-2 text-sm barcode-input" placeholder="01-96">
+                </div>
+                <div class="col-span-1 text-center">
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn-icon btn-delete p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function generateCSV() {
+            const seqId = document.getElementById('seqId').value.trim();
+            const initials = document.getElementById('initials').value.trim();
+            const date = document.getElementById('expDate').value;
+
+            if (!seqId || !initials) {
+                alert("Please fill in Sequence ID and Initials.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Header row
+            csvContent += "Experiment_ID,Pool,Source_Folders,Patient_ID,Barcode_Number,Date\n";
+
+            const processPool = (poolName) => {
+                const suffixInput = document.getElementById(`folders${poolName}`).value;
+                const suffixes = suffixInput.split(',').map(s => s.trim()).filter(s => s);
+                
+                // Create the full folder string (e.g., "14734-CZ-1;14734-CZ-2")
+                const fullFolders = suffixes.map(n => `${seqId}-${initials}-${n}`).join(';');
+                
+                // Get all rows
+                const rows = document.querySelectorAll(`#list${poolName} .grid`);
+                
+                rows.forEach(row => {
+                    const patient = row.querySelector('.patient-input').value.trim();
+                    const barcode = row.querySelector('.barcode-input').value.trim();
+
+                    if (patient && barcode) {
+                        // Format: EXP, POOL, FOLDERS, PATIENT, BARCODE, DATE
+                        let rowString = `${seqId},${poolName},"${fullFolders}",${patient},${barcode},${date}`;
+                        csvContent += rowString + "\n";
+                    }
+                });
+            };
+
+            processPool('A');
+            processPool('B');
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${seqId}_SampleSheet_${date}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initial preview render
+        updatePreviews();
+    </script>
+</body>
+</html>
